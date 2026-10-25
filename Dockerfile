@@ -10,6 +10,7 @@ RUN dnf install -y --setopt=install_weak_deps=False \
 		libicu \
 		libstdc++ \
 		openssl-libs \
+		postgresql \
 		procps-ng \
 		shadow-utils \
 		tar \
