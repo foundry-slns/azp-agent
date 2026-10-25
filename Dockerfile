@@ -19,13 +19,18 @@ RUN apt-get update \
 		zlib1g \
 	&& rm -rf /var/lib/apt/lists/*
 
-# Docker CLI only; jobs drive the host's dockerd through the mounted socket.
-RUN install -m 0755 -d /etc/apt/keyrings \
+# Docker CLI only (jobs drive the host's dockerd through the mounted socket)
+# and Azure CLI for AzureCLI@2 tasks.
+RUN codename=$(. /etc/os-release && echo "$VERSION_CODENAME") \
+	&& install -m 0755 -d /etc/apt/keyrings \
 	&& curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc \
-	&& echo "deb [signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" \
+	&& echo "deb [signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $codename stable" \
 		> /etc/apt/sources.list.d/docker.list \
+	&& curl -fsSL https://packages.microsoft.com/keys/microsoft.asc -o /etc/apt/keyrings/microsoft.asc \
+	&& echo "deb [signed-by=/etc/apt/keyrings/microsoft.asc] https://packages.microsoft.com/repos/azure-cli/ $codename main" \
+		> /etc/apt/sources.list.d/azure-cli.list \
 	&& apt-get update \
-	&& apt-get install -y --no-install-recommends docker-ce-cli docker-buildx-plugin \
+	&& apt-get install -y --no-install-recommends docker-ce-cli docker-buildx-plugin azure-cli \
 	&& rm -rf /var/lib/apt/lists/*
 
 # The base image's `ubuntu` user holds uid 1000; the host keys the docker
