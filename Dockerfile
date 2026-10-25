@@ -33,6 +33,13 @@ RUN codename=$(. /etc/os-release && echo "$VERSION_CODENAME") \
 	&& apt-get install -y --no-install-recommends docker-ce-cli docker-buildx-plugin azure-cli \
 	&& rm -rf /var/lib/apt/lists/*
 
+# Google Chrome for Lighthouse CI (chrome-launcher finds google-chrome-stable
+# on PATH). Ubuntu's chromium is a snap, which doesn't run in a container.
+RUN curl -fsSL https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb -o /tmp/chrome.deb \
+	&& apt-get update \
+	&& apt-get install -y --no-install-recommends /tmp/chrome.deb \
+	&& rm -rf /tmp/chrome.deb /var/lib/apt/lists/*
+
 # The base image's `ubuntu` user holds uid 1000; the host keys the docker
 # socket group and work dir to 1000, so `agent` takes it over. Passwordless
 # sudo matches Microsoft-hosted agents (e.g. playwright install --with-deps).
