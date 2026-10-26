@@ -40,6 +40,20 @@ RUN curl -fsSL https://dl.google.com/linux/direct/google-chrome-stable_current_a
 	&& apt-get install -y --no-install-recommends /tmp/chrome.deb \
 	&& rm -rf /tmp/chrome.deb /var/lib/apt/lists/*
 
+# PowerShell for microsoft365-config (pwsh steps, and OpenTofu's Exchange
+# scripts). Microsoft's apt repo has only previews for 26.04, so this is the
+# release tarball, pinned by hash.
+ARG PWSH_VERSION=7.6.7
+ARG PWSH_SHA256=6896f9e3a6b0a354bf470835a96da76d2f801cd50dcf047ad7c4563bf93bf431
+RUN curl -fsSL "https://github.com/PowerShell/PowerShell/releases/download/v${PWSH_VERSION}/powershell-${PWSH_VERSION}-linux-x64.tar.gz" -o /tmp/pwsh.tar.gz \
+	&& echo "${PWSH_SHA256}  /tmp/pwsh.tar.gz" | sha256sum --check --quiet \
+	&& mkdir -p /opt/microsoft/powershell/7 \
+	&& tar -xzf /tmp/pwsh.tar.gz -C /opt/microsoft/powershell/7 \
+	&& chmod +x /opt/microsoft/powershell/7/pwsh \
+	&& ln -s /opt/microsoft/powershell/7/pwsh /usr/local/bin/pwsh \
+	&& rm /tmp/pwsh.tar.gz \
+	&& pwsh -NoProfile -Command '$PSVersionTable.PSVersion.ToString()'
+
 # The base image's `ubuntu` user holds uid 1000; the host keys the docker
 # socket group and work dir to 1000, so `agent` takes it over. Passwordless
 # sudo matches Microsoft-hosted agents (e.g. playwright install --with-deps).
